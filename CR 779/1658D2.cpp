@@ -17,41 +17,91 @@ template<class T> void print(T& a) { for(auto x:a)cout<<x<<" "; cout<<"\n";}
 const long double PI = 3.14159265358979;
 const long double EPS=1e-9;
 
+struct btt
+{
+    btt* left=nullptr;
+    btt* right=nullptr;
+};
+
+
 void Engine(int tc)
 {
-    int x,l,r; cin>>l>>r;
-    int cnt[17],cnt1[17];
-    memset(cnt,0,sizeof cnt);
-    memset(cnt1,0,sizeof cnt1);
+    int mx,mn,x,l,r; cin>>l>>r;
+    int n=r-l+1;
 
-    for(int i=l; i<=r; i++)
+    btt *root=new btt();
+    btt *temp, *temp1;
+
+    int a[n];
+    for(int i=0; i<n; i++)
     {
-        x=i;
-        for(int j=0; j<17; j++)
+        cin>>a[i];
+        temp=root;
+        for(int j=16; j>=0; j--)
         {
-            if(x&1)cnt[j]++;
-            x>>=1;
+            if((1<<j)&a[i])
+            {
+                if(temp->right==nullptr)temp->right=new btt();
+                temp=temp->right;
+            }
+
+            else
+            {
+                if(temp->left==nullptr)temp->left=new btt();
+                temp=temp->left;
+            }
         }
     }
 
-    for(int i=l; i<=r; i++)
+    for(int i=0; i<n; i++)
     {
-        cin>>x;
-        for(int j=0; j<17; j++)
+        x=a[i]^l;
+        mn=0;
+        mx=0;
+
+        temp1=temp=root;
+
+        for(int j=16; j>=0; j--)
         {
-            if(x&1)cnt1[j]++;
-            x>>=1;
+            if(x&(1<<j))
+            {
+                if(temp->right==nullptr)
+                {
+                    mn+=(1<<j);
+                    temp=temp->left;
+                }
+                else temp=temp->right;
+
+                if(temp1->left==nullptr)temp1=temp1->right;
+                else 
+                {
+                    mx+=(1<<j);
+                    temp1=temp1->left;
+                }
+            }
+            else
+            {
+                if(temp->left==nullptr)
+                {
+                    mn+=(1<<j);
+                    temp=temp->right;
+                }
+                else temp=temp->left;
+
+                if(temp1->right==nullptr) temp1=temp1->left;
+                else 
+                {
+                    mx+=(1<<j);
+                    temp1=temp1->right;
+                }
+            }
+        }
+        if(mn==l && mx==r)
+        {
+            cout<<x<<nl;
+            return;
         }
     }
-
-    int ans=0;
-
-    for(int i=0; i<17; i++)
-    {
-        if(cnt1[i]!=cnt[i])ans+=(1<<i);
-    }
-
-    cout<<ans<<nl;
 }
 
 int main()
