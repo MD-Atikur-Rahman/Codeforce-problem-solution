@@ -17,115 +17,64 @@ template<class T> void print(T& a) { for(auto x:a)cout<<x<<" "; cout<<"\n";}
 const long double PI = 3.14159265358979;
 const long double EPS=1e-9;
 
-VL par,sum,pl,pr;
+const int maxn=500005;
+int fen[maxn];
+int n;
 
-int findp(int v)
+void add(int pos,int val)
 {
-    if(par[v]==v)return v;
-    par[v]=findp(par[v]);
-    return par[v];
+    for(int i=pos; i<=n; i+=i&-i)
+    {
+        fen[i]=max(fen[i],val);
+    }
 }
+
+int get(int pos)
+{
+    int ret=INT32_MIN;
+    for(pos; pos>0; pos-=pos&-pos)
+    {
+        ret=max(ret,fen[pos]);
+    }
+    return ret;
+}
+
 
 void Engine(int tc)
 {
-    int p,l,r,n,lpp,rpp; 
     cin>>n;
+    int a[n+1];
+    ll pre=0;
+    vector<pair<ll,int>> v;
+    for(int i=1; i<=n; i++)
+    {
+        cin>>a[i];
+        pre+=a[i];
+        v.push_back({pre,-i});
+    }
 
-    par.clear();
-    sum.clear();
-    pl.clear();
-    pr.clear();
-    par.resize(n+1);
-    sum.resize(n+1);
-    pl.resize(n+1);
-    pr.resize(n+1);
+    sort(All(v));
+
+    int ord[n+1];
+    for(int i=0; i<n; i++)
+    {
+        ord[-v[i].second]=i+1;
+    }    
+
+    for(int i=0; i<=n; i++)fen[i]=INT32_MIN;
+
+    int dp[n+1];
+    dp[0]=0,pre=0;
 
     for(int i=1; i<=n; i++)
     {
-        cin>>sum[i];
-        par[i]=i;
-        pl[i]=i;
-        pr[i]=i;
+        pre+=a[i];
+        dp[i]=dp[i-1]+(a[i]>0? 1:(a[i]==0? 0:-1));
+        dp[i]=max(dp[i],get(ord[i])+i);
+        if(pre>0)dp[i]=i;
+        add(ord[i],dp[i]-i);
     }
-    bool flag;
-    for(int i=1; i<=n; i++)
-    {
-        if(findp(i)!=i || sum[i]<=0)continue;
-
-        p=i;
-        while(1)
-        {
-            flag=false;
-
-            l=pl[p];
-            r=pr[p];
-
-            if(l>1 && r<n)
-            {
-                lpp=findp(l-1);
-                rpp=findp(r+1);
-
-                if(sum[lpp]>=sum[rpp] && sum[p]+sum[lpp]>0)
-                {
-                    flag=true;
-                    pl[p]=pl[lpp];
-                    sum[p]+=sum[lpp];
-                    par[lpp]=p;
-                }
-                else if(sum[p]+sum[rpp]>0)
-                {
-                    flag=true;
-                    pr[p]=pr[rpp];
-                    sum[p]+=sum[rpp];
-                    par[rpp]=p;
-                    // cout<<p<<" "<<rpp<<" "<<findp(rpp)<<" "<<pl[p]<<" "<<pr[p]<<nl;
-                }
-            }
-
-
-            else if(l>1)
-            {
-                lpp=findp(l-1);
-                if(sum[p]+sum[lpp]>0)
-                {
-                    flag=true;
-                    pl[p]=pl[lpp];
-                    sum[p]+=sum[lpp];
-                    par[lpp]=p;
-                }
-            }
-
-            else if(r<n)
-            {
-                rpp=findp(r+1);
-                if(sum[p]+sum[rpp]>0)
-                {
-                    flag=true;
-                    pr[p]=pr[rpp];
-                    sum[p]+=sum[rpp];
-                    par[rpp]=p;
-                    // cout<<p<<" "<<rpp<<" "<<findp(rpp)<<" "<<pl[p]<<" "<<pr[p]<<nl;
-                }
-            }
-            // cout<<p<<" "<<sum[p]<<nl;
-
-            if(flag==false)break;
-        }
-
-    }
-
-    int ans=0;
-
-    for(int i=1; i<=n; i++)
-    {
-        p=findp(i);
-        if(p!=i)continue;
-
-        if(sum[p]<0)ans-=(pr[p]-pl[p]+1);
-        if(sum[p]>0)ans+=(pr[p]-pl[p]+1);
-    }
-
-    cout<<ans<<nl;
+    cout<<dp[n]<<nl;
 }
 
 int main()
